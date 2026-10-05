@@ -4,7 +4,7 @@ An interactive data analytics dashboard for exploring India's historical rainfal
 
 ## 🌐 Live Demo
 
-**[Open the India Rainfall Intelligence Dashboard](https://curious-paprenjak-cd8c89.netlify.app/)**
+**[Open the India Rainfall Intelligence Dashboard](https://india-rainfall-intelligence.netlify.app/)**
 
 The dashboard analyzes rainfall data from **1901–2015** and provides both national historical analysis and district-level climatological insights.
 
@@ -159,17 +159,13 @@ It can be useful for:
 
 ## 🚀 Live Application
 
-👉 **[Launch the Dashboard](https://curious-paprenjak-cd8c89.netlify.app/)**
+👉 **[Launch the Dashboard](https://india-rainfall-intelligence.netlify.app/)**
 
 ## 📚 Data Source
 
 The dashboard uses historical rainfall observations and climatological normal data associated with the **India Meteorological Department (IMD)** datasets included in this repository.
 
-## 👨‍💻 Author
 
-**Palakurthi Venkatesh Goud**
-
-GitHub: [@PalakurthiVenkateshGoud](https://github.com/PalakurthiVenkateshGoud)
 
 ---
 
