@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>India Rainfall Intelligence Dashboard | 1901–2015</title>
+  <meta name="description" content="A comprehensive meteorological intelligence dashboard analyzing 115 years of India rainfall observations and district climatological normals.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Header Bar -->
+    <header class="top-header">
+      <div class="brand-section">
+        <div class="brand-icon">🌧️</div>
+        <div class="brand-text">
+          <h1>India Rainfall Intelligence Dashboard</h1>
+          <p>
+            <span>1901–2015 Meteorological Analysis</span>
+            <span class="badge-tag">IMD Observational & Climatological Normal Data</span>
+          </p>
+        </div>
+      </div>
+      <div class="header-controls">
+        <button id="exportBtn" class="btn-primary" title="Export current analytical summaries as CSV">
+          <span>📥</span> Export Summary
+        </button>
+        <button id="themeToggleBtn" class="btn-icon" title="Toggle Light/Dark Theme">
+          ☀️
+        </button>
+      </div>
+    </header>
+
+    <!-- Global Tab Navigation -->
+    <nav class="nav-tab-container">
+      <button class="nav-tab active" data-tab="overview-tab">🏛️ Executive Overview</button>
+      <button class="nav-tab" data-tab="subdivision-tab">🗺️ Historical Subdivision Analysis</button>
+      <button class="nav-tab" data-tab="district-tab">📍 District & State Normals</button>
+      <button class="nav-tab" data-tab="seasonal-tab">🌦️ Seasonal & Monsoon Dynamics</button>
+      <button class="nav-tab" data-tab="extremes-tab">⚠️ Climate Extremes & Risk</button>
+      <button class="nav-tab" data-tab="methodology-tab">📖 Methodology & Data Dictionary</button>
+    </nav>
+
+    <!-- Global Top KPI Cards Ribbon -->
+    <main class="main-content">
+      <section class="kpi-grid">
+        <!-- KPI 1: Long-term Annual Mean -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Long-Term Annual Mean</span>
+            <div class="kpi-icon">💧</div>
+          </div>
+          <div class="kpi-value"><span id="kpi-annual-mean">1,411.0</span><span class="unit">mm</span></div>
+          <div class="kpi-subtext">All-India historical baseline across subdivisions (1901–2015)</div>
+        </div>
+
+        <!-- KPI 2: Monsoon Contribution -->
+        <div class="kpi-card kpi-monsoon">
+          <div class="kpi-header">
+            <span class="kpi-title">Monsoon (Jun–Sep) Share</span>
+            <div class="kpi-icon">⛈️</div>
+          </div>
+          <div class="kpi-value" style="color: #06b6d4;"><span id="kpi-monsoon-share">76.5%</span></div>
+          <div class="kpi-subtext">Average share of annual rainfall driven by SW Monsoon</div>
+        </div>
+
+        <!-- KPI 3: Wettest Region -->
+        <div class="kpi-card kpi-wet">
+          <div class="kpi-header">
+            <span class="kpi-title">Wettest Region (Normal)</span>
+            <div class="kpi-icon">🌊</div>
+          </div>
+          <div class="kpi-value" style="font-size: 1.35rem; color: #10b981;"><span id="kpi-wettest-sub">Arunachal Pradesh</span></div>
+          <div class="kpi-subtext"><span class="kpi-highlight" id="kpi-wettest-val">3,418.9 mm</span> / yr | District: <strong>Tamenglong (7,229.3 mm)</strong></div>
+        </div>
+
+        <!-- KPI 4: Driest Region -->
+        <div class="kpi-card kpi-dry">
+          <div class="kpi-header">
+            <span class="kpi-title">Driest Region (Normal)</span>
+            <div class="kpi-icon">🏜️</div>
+          </div>
+          <div class="kpi-value" style="font-size: 1.35rem; color: #f59e0b;"><span id="kpi-driest-sub">West Rajasthan</span></div>
+          <div class="kpi-subtext"><span class="kpi-highlight" id="kpi-driest-val">292.7 mm</span> / yr | District: <strong>Ladakh (94.6 mm)</strong></div>
+        </div>
+
+        <!-- KPI 5: Dataset Span & Records -->
+        <div class="kpi-card kpi-records">
+          <div class="kpi-header">
+            <span class="kpi-title">Temporal & Spatial Scope</span>
+            <div class="kpi-icon">📊</div>
+          </div>
+          <div class="kpi-value" style="font-size: 1.45rem; color: #a855f7;"><span id="kpi-records-count">4,116</span> <span class="unit">records</span></div>
+          <div class="kpi-subtext"><span id="kpi-years-span">1901–2015 (115 Yrs)</span> • 36 Subdivisions • 641 District Norms</div>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 1: EXECUTIVE OVERVIEW -->
+      <!-- ========================================================================= -->
+      <section id="overview-tab" class="dashboard-tab-pane active">
+        <div class="section-header">
+          <div class="section-title-group">
+            <h2>🏛️ Executive Overview & National Historical Trends</h2>
+            <p>Macro-level longitudinal perspective analyzing 115 continuous years of Indian rainfall and monsoon variability (Dataset 1).</p>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group flex-1">
+            <label for="execYearRange">Start Year Filter</label>
+            <div class="range-slider-wrap">
+              <input type="range" id="execYearRange" min="1901" max="2000" step="1" value="1901">
+              <span id="execYearLabel" class="range-val-badge">1901 – 2015</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Row 1: 115-Year Annual & Monsoon Trendline -->
+        <div class="charts-grid-full">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>📈 National Annual & Southwest Monsoon Trend (1901–2015)</h3>
+                <p>Observed all-India annual mean, Southwest Monsoon (Jun–Sep) rainfall, and 10-year rolling moving average trend.</p>
+              </div>
+            </div>
+            <div class="chart-body chart-body-tall">
+              <canvas id="execTrendChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Row 2: Anomaly Departure & Decadal Comparison -->
+        <div class="charts-grid-2">
+          <!-- Anomaly Divergence Chart -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>⚖️ Year-Wise Rainfall Anomaly & Departure from Normal</h3>
+                <p>Percentage departure from long-term baseline (IMD Criteria: Excess ≥ +20%, Normal: −19% to +19%, Deficient: −20% to −59%, Scanty: ≤ −60%).</p>
+              </div>
+              <div class="custom-legend">
+                <span class="legend-item"><span class="legend-dot dot-excess"></span> Excess (&gt;+20%)</span>
+                <span class="legend-item"><span class="legend-dot dot-normal"></span> Normal</span>
+                <span class="legend-item"><span class="legend-dot dot-deficient"></span> Deficient (-20% to -59%)</span>
+                <span class="legend-item"><span class="legend-dot dot-scanty"></span> Scanty (&le;-60%)</span>
+              </div>
+            </div>
+            <div class="chart-body">
+              <canvas id="execAnomalyChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Decadal Rainfall Comparison -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>📅 Decadal Rainfall Comparison (1900s–2010s)</h3>
+                <p>Decadal averages comparing Annual vs Monsoon totals across 12 distinct decades.</p>
+              </div>
+            </div>
+            <div class="chart-body">
+              <canvas id="execDecadalChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Executive Narrative Insights -->
+        <div class="insight-box">
+          <h4>💡 Executive Macro Insights</h4>
+          <p>
+            • <strong>Historical Highs & Lows:</strong> The wettest all-India year occurred in <strong>1961 (1,717.1 mm)</strong>, while the most severe nationwide drought was recorded in <strong>1972 (1,146.5 mm)</strong> followed closely by <strong>1918, 1965, 1987, and 2002</strong>.<br>
+            • <strong>Decadal Oscillations:</strong> The mid-20th century (1940s–1960s) represented a wetter multi-decadal regime, whereas the late 1960s and 2000s exhibited elevated drought frequencies.<br>
+            • <strong>Monsoon Reliance:</strong> The Southwest Monsoon accounts for over <strong>76.5%</strong> of national precipitation, establishing it as the fundamental driver of agrarian productivity and water storage across India.
+          </p>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 2: HISTORICAL SUBDIVISION ANALYSIS -->
+      <!-- ========================================================================= -->
+      <section id="subdivision-tab" class="dashboard-tab-pane">
+        <div class="section-header">
+          <div class="section-title-group">
+            <h2>🗺️ Historical Meteorological Subdivision Analysis (1901–2015)</h2>
+            <p>Granular time-series explorer for each of India's 36 IMD Meteorological Subdivisions (Dataset 1).</p>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label for="subSelect">Select Subdivision</label>
+            <select id="subSelect" class="filter-select"></select>
+          </div>
+          <div class="filter-group flex-1">
+            <label for="subYearRange">Time Horizon Filter</label>
+            <div class="range-slider-wrap">
+              <input type="range" id="subYearRange" min="1901" max="2000" step="1" value="1901">
+              <span id="subYearLabel" class="range-val-badge">1901 – 2015</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subdivision Badges Ribbon -->
+        <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 1.5rem;">
+          <div class="kpi-card" style="padding: 0.9rem 1.1rem;">
+            <div class="kpi-title">Subdivision Mean</div>
+            <div class="kpi-value" id="sub-badge-mean" style="font-size: 1.3rem;">--</div>
+          </div>
+          <div class="kpi-card" style="padding: 0.9rem 1.1rem;">
+            <div class="kpi-title">Volatility (CV %)</div>
+            <div class="kpi-value" id="sub-badge-cv" style="font-size: 1.3rem; color: #f59e0b;">--</div>
+          </div>
+          <div class="kpi-card" style="padding: 0.9rem 1.1rem;">
+            <div class="kpi-title">Monsoon Share</div>
+            <div class="kpi-value" id="sub-badge-monsoon" style="font-size: 1.3rem; color: #06b6d4;">--</div>
+          </div>
+          <div class="kpi-card" style="padding: 0.9rem 1.1rem;">
+            <div class="kpi-title">Wettest Year</div>
+            <div class="kpi-value" id="sub-badge-highest" style="font-size: 1.1rem; color: #10b981;">--</div>
+          </div>
+          <div class="kpi-card" style="padding: 0.9rem 1.1rem;">
+            <div class="kpi-title">Driest Year</div>
+            <div class="kpi-value" id="sub-badge-lowest" style="font-size: 1.1rem; color: #ef4444;">--</div>
+          </div>
+          <div class="kpi-card" style="padding: 0.9rem 1.1rem;">
+            <div class="kpi-title">Drought Years Count</div>
+            <div class="kpi-value" id="sub-badge-droughts" style="font-size: 1.3rem; color: #facc15;">--</div>
+          </div>
+        </div>
+
+        <!-- Chart Row 1: Subdivision Annual Trend -->
+        <div class="charts-grid-full">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>📈 Regional Annual & Monsoon Time Series</h3>
+                <p>Historical observed rainfall, Southwest Monsoon volume, and 5-year moving average.</p>
+              </div>
+            </div>
+            <div class="chart-body">
+              <canvas id="subTrendChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Row 2: Monthly Cycle, Seasonal Breakdown, Rankings -->
+        <div class="charts-grid-3">
+          <!-- Monthly Normal vs Latest -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>🗓️ 12-Month Rainfall Normal</h3>
+                <p>115-Year baseline monthly curve vs latest year.</p>
+              </div>
+            </div>
+            <div class="chart-body">
+              <canvas id="subMonthlyChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Seasonal Share Donut -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>🍩 Seasonal Distribution</h3>
+                <p>Breakdown across the 4 IMD meteorological seasons.</p>
+              </div>
+            </div>
+            <div class="chart-body">
+              <canvas id="subSeasonalChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Top Wettest & Driest Subdivisions -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>🏆 Regional Extremes Ranking</h3>
+                <p>Top 5 Wettest (Green) vs Top 5 Driest (Orange) Subdivisions.</p>
+              </div>
+            </div>
+            <div class="chart-body">
+              <canvas id="subRankingChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Climate Heatmap: 36 Subdivisions x 115 Years -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <h3>🔥 Historical Climate Heatmap (36 Subdivisions × 115 Years)</h3>
+              <p>Visualizing every annual observation from 1901 to 2015 across all meteorological regions. Hover over any tile for full details.</p>
+            </div>
+            <div class="custom-legend">
+              <span class="legend-item"><span class="legend-dot" style="background: #7f1d1d;"></span> &lt;400mm (Arid)</span>
+              <span class="legend-item"><span class="legend-dot" style="background: #b45309;"></span> 400–800mm (Dry)</span>
+              <span class="legend-item"><span class="legend-dot" style="background: #0284c7;"></span> 800–1200mm (Moderate)</span>
+              <span class="legend-item"><span class="legend-dot" style="background: #06b6d4;"></span> 1200–2000mm (Wet)</span>
+              <span class="legend-item"><span class="legend-dot" style="background: #10b981;"></span> 2000–3200mm (Very Wet)</span>
+              <span class="legend-item"><span class="legend-dot" style="background: #34d399;"></span> &gt;3200mm (Extreme)</span>
+            </div>
+          </div>
+          <div class="heatmap-wrap">
+            <canvas id="heatmapCanvas"></canvas>
+            <div id="heatmapTooltip" class="heatmap-tooltip"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 3: DISTRICT / STATE RAINFALL NORMALS -->
+      <!-- ========================================================================= -->
+      <section id="district-tab" class="dashboard-tab-pane">
+        <div class="section-header">
+          <div class="section-title-group">
+            <h2>📍 District & State Rainfall Climatological Normals</h2>
+            <p>Spatial micro-level baseline analyzing 641 district records across 35 States & UTs (Dataset 2).</p>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label for="stateSelect">Select State / UT</label>
+            <select id="stateSelect" class="filter-select"></select>
+          </div>
+          <div class="filter-group flex-1">
+            <label for="districtSelect">Select District (Cascading)</label>
+            <select id="districtSelect" class="filter-select"></select>
+          </div>
+        </div>
+
+        <!-- District & State KPI Badges -->
+        <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 1.5rem;">
+          <div class="kpi-card" style="padding: 0.9rem 1.1rem;">
+            <div class="kpi-title">District Annual Normal</div>
+            <div class="kpi-value" id="dist-badge-annual" style="font-size: 1.3rem;">--</div>
+          </div>
+          <div class="kpi-card" style="padding: 0.9rem 1.1rem;">
+            <div class="kpi-title">Monsoon Share</div>
+            <div class="kpi-value" id="dist-badge-monsoon" style="font-size: 1.3rem; color: #06b6d4;">--</div>
+          </div>
+          <div class="kpi-card" style="padding: 0.9rem 1.1rem;">
+            <div class="kpi-title">State Average Normal</div>
+            <div class="kpi-value" id="dist-badge-state-avg" style="font-size: 1.3rem;">--</div>
+          </div>
+          <div class="kpi-card" style="padding: 0.9rem 1.1rem;">
+            <div class="kpi-title">State Wettest District</div>
+            <div class="kpi-value" id="dist-badge-wet-dist" style="font-size: 1rem; color: #10b981;">--</div>
+          </div>
+          <div class="kpi-card" style="padding: 0.9rem 1.1rem;">
+            <div class="kpi-title">State Driest District</div>
+            <div class="kpi-value" id="dist-badge-dry-dist" style="font-size: 1rem; color: #f59e0b;">--</div>
+          </div>
+          <div class="kpi-card" style="padding: 0.9rem 1.1rem;">
+            <div class="kpi-title">Intra-State Disparity Range</div>
+            <div class="kpi-value" id="dist-badge-state-range" style="font-size: 1.3rem; color: #a855f7;">--</div>
+          </div>
+        </div>
+
+        <!-- Chart Row 1: District Monthly Normal & Seasonal Breakdown -->
+        <div class="charts-grid-2">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>🗓️ District vs State Monthly Climatological Normal</h3>
+                <p>12-Month rainfall curve of the selected district benchmarked against state average normal.</p>
+              </div>
+            </div>
+            <div class="chart-body">
+              <canvas id="distMonthlyChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>🍩 District Seasonal Normal Breakdown</h3>
+                <p>Distribution across Winter, Pre-Monsoon, Monsoon, and Post-Monsoon seasons.</p>
+              </div>
+            </div>
+            <div class="chart-body">
+              <canvas id="distSeasonalChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Row 2: Intra-State Disparity Bar Chart -->
+        <div class="charts-grid-full">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>📊 Intra-State District Rainfall Disparity (All Districts in Selected State)</h3>
+                <p>Comparing annual normal rainfall across all districts in the chosen state (Gold bar indicates currently selected district).</p>
+              </div>
+            </div>
+            <div class="chart-body">
+              <canvas id="distDisparityChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Row 3: State-Level Rankings & Top 10 Leaderboards -->
+        <div class="charts-grid-2">
+          <!-- State-Level Ranking Chart -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>🏆 State-Level Normal Rainfall Ranking (35 States & UTs)</h3>
+                <p>Aggregated average annual normal rainfall across all districts in each state/UT.</p>
+              </div>
+            </div>
+            <div class="chart-body chart-body-tall">
+              <canvas id="stateRankChart"></canvas>
+            </div>
+          </div>
+
+          <!-- District Leaderboard Lists -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>🏅 National District Climatological Leaderboards</h3>
+                <p>Top 10 Wettest vs Top 10 Driest districts in India based on long-term normals.</p>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; overflow-y: auto; max-height: 400px;">
+              <div>
+                <h4 style="font-size: 0.85rem; color: #10b981; margin-bottom: 0.5rem;">🌊 Top 10 Wettest Districts</h4>
+                <div id="topWettestDistrictsList" class="ranking-list"></div>
+              </div>
+              <div>
+                <h4 style="font-size: 0.85rem; color: #ef4444; margin-bottom: 0.5rem;">🏜️ Top 10 Driest Districts</h4>
+                <div id="topDriestDistrictsList" class="ranking-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 4: SEASONAL & MONSOON DYNAMICS -->
+      <!-- ========================================================================= -->
+      <section id="seasonal-tab" class="dashboard-tab-pane">
+        <div class="section-header">
+          <div class="section-title-group">
+            <h2>🌦️ Seasonal & Monsoon Dynamics</h2>
+            <p>In-depth exploration of India's 4 distinct meteorological seasons and regional monsoon regimes.</p>
+          </div>
+        </div>
+
+        <!-- 4 Seasons Highlights Cards -->
+        <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 1.5rem;">
+          <div class="kpi-card" style="--accent-gradient: linear-gradient(to bottom, #38bdf8, #0284c7);">
+            <div class="kpi-title">❄️ Winter (Jan–Feb)</div>
+            <div class="kpi-value" style="font-size: 1.5rem;">39.9 <span class="unit">mm</span></div>
+            <div class="kpi-subtext">~2.8% of Annual | Driven by Western Disturbances in Himalayas</div>
+          </div>
+          <div class="kpi-card" style="--accent-gradient: linear-gradient(to bottom, #facc15, #f59e0b);">
+            <div class="kpi-title">☀️ Pre-Monsoon (Mar–May)</div>
+            <div class="kpi-value" style="font-size: 1.5rem;">152.3 <span class="unit">mm</span></div>
+            <div class="kpi-subtext">~10.8% of Annual | Thunderstorms, Kalbaisakhi & Nor'westers</div>
+          </div>
+          <div class="kpi-card" style="--accent-gradient: linear-gradient(to bottom, #06b6d4, #10b981);">
+            <div class="kpi-title">⛈️ SW Monsoon (Jun–Sep)</div>
+            <div class="kpi-value" style="font-size: 1.5rem; color: #06b6d4;">1,064.7 <span class="unit">mm</span></div>
+            <div class="kpi-subtext">~76.5% of Annual | Primary lifeline of Indian hydrology</div>
+          </div>
+          <div class="kpi-card" style="--accent-gradient: linear-gradient(to bottom, #a855f7, #ec4899);">
+            <div class="kpi-title">🍂 Post-Monsoon (Oct–Dec)</div>
+            <div class="kpi-value" style="font-size: 1.5rem; color: #a855f7;">154.1 <span class="unit">mm</span></div>
+            <div class="kpi-subtext">~10.9% of Annual | NE Monsoon critical for Tamil Nadu & AP</div>
+          </div>
+        </div>
+
+        <!-- Seasonal Charts -->
+        <div class="charts-grid-2">
+          <!-- 12-Month Annual Cycle -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>🗓️ All-India 12-Month Rainfall Cycle</h3>
+                <p>Monthly progression showing the dominant July–August monsoon peak vs dry winter months.</p>
+              </div>
+            </div>
+            <div class="chart-body">
+              <canvas id="seasonalMonthlyCycleChart"></canvas>
+            </div>
+          </div>
+
+          <!-- National Seasonal Contribution Donut -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>🍩 National Seasonal Volume Contribution</h3>
+                <p>Percentage share of national annual precipitation across the 4 seasons.</p>
+              </div>
+            </div>
+            <div class="chart-body">
+              <canvas id="seasonalDonutChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Regional Regime Comparison -->
+        <div class="charts-grid-full">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>🔄 Contrasting Regional Meteorological Regimes</h3>
+                <p>Comparing Southwest Monsoon-dominated zones (Konkan & Goa) vs Northeast/Post-Monsoon-dominated zones (Tamil Nadu) vs Western Disturbance-influenced zones (Jammu & Kashmir).</p>
+              </div>
+            </div>
+            <div class="chart-body">
+              <canvas id="seasonalRegimeChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 5: CLIMATE EXTREMES & RISK ASSESSMENT -->
+      <!-- ========================================================================= -->
+      <section id="extremes-tab" class="dashboard-tab-pane">
+        <div class="section-header">
+          <div class="section-title-group">
+            <h2>⚠️ Climate Extremes, Volatility & Risk Assessment</h2>
+            <p>Identifying high-risk regions, inter-annual volatility (CV %), and historical drought/flood event footprints.</p>
+          </div>
+        </div>
+
+        <!-- Historical Record Tables -->
+        <div class="charts-grid-2">
+          <!-- Top 10 All-Time Wettest Subdivision-Years -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>🌊 Top 10 Wettest Historical Subdivision-Years</h3>
+                <p>Highest recorded annual rainfall events in 115 years of observational data.</p>
+              </div>
+            </div>
+            <div class="table-responsive" style="max-height: 320px;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Subdivision</th>
+                    <th>Year</th>
+                    <th>Annual (mm)</th>
+                    <th>Monsoon (mm)</th>
+                  </tr>
+                </thead>
+                <tbody id="extremeWetTbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Top 10 All-Time Driest Subdivision-Years -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>🏜️ Top 10 Driest Historical Subdivision-Years</h3>
+                <p>Most severe localized drought years recorded in observational history.</p>
+              </div>
+            </div>
+            <div class="table-responsive" style="max-height: 320px;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Subdivision</th>
+                    <th>Year</th>
+                    <th>Annual (mm)</th>
+                    <th>Monsoon (mm)</th>
+                  </tr>
+                </thead>
+                <tbody id="extremeDryTbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts: CV Volatility & Drought Frequency -->
+        <div class="charts-grid-2">
+          <!-- Coefficient of Variation -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>📊 Inter-Annual Volatility: Coefficient of Variation (CV %)</h3>
+                <p>Higher CV% indicates erratic, high-risk rainfall zones requiring resilient irrigation and drought planning.</p>
+              </div>
+            </div>
+            <div class="chart-body chart-body-tall">
+              <canvas id="extremesCVChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Drought / Deficient Frequency -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>📉 Historical Drought & Deficient Rainfall Frequency (1901–2015)</h3>
+                <p>Total count of years classified as Deficient (-20% to -59%) or Scanty (&le;-60%) under IMD criteria.</p>
+              </div>
+            </div>
+            <div class="chart-body chart-body-tall">
+              <canvas id="extremesDroughtChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 6: METHODOLOGY & DATA DICTIONARY -->
+      <!-- ========================================================================= -->
+      <section id="methodology-tab" class="dashboard-tab-pane">
+        <div class="section-header">
+          <div class="section-title-group">
+            <h2>📖 Methodology, Meteorological Definitions & Data Dictionary</h2>
+            <p>Comprehensive documentation of data sources, calculated metrics, and quality handling rules.</p>
+          </div>
+        </div>
+
+        <div class="charts-grid-2">
+          <!-- Data Sources & Distinctions -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>🗂️ Data Sources & Distinctions</h3>
+              </div>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+              <p><strong style="color:#38bdf8;">Dataset 1 (Historical Observed Time Series):</strong><br>
+              • File: <code>rainfall in india 1901-2015.csv</code> (4,116 rows × 19 cols)<br>
+              • Captures 115 continuous years (1901–2015) across 36 IMD Meteorological Subdivisions.<br>
+              • Represents empirical observed monthly, seasonal, and annual rainfall in millimeters (mm).<br>
+              • Used for trend analysis, 10-year rolling moving averages, drought frequency, and CV% volatility.</p>
+              <br>
+              <p><strong style="color:#10b981;">Dataset 2 (District Climatological Normals):</strong><br>
+              • File: <code>district wise rainfall normal.csv</code> (641 rows × 19 cols)<br>
+              • Captures standard IMD climatological normal averages across 641 district entries in 35 States/UTs.<br>
+              • Represents long-term 30/50-year baseline normals for spatial drill-down and intra-state disparity analysis.<br>
+              • <strong>Disambiguation Rule:</strong> Compound key <code>STATE_UT_NAME + DISTRICT</code> is used to disambiguate identical district names occurring in multiple states (e.g., Aurangabad in Bihar vs Maharashtra; Bilaspur in HP vs Chatisgarh; Bijapur in Karnataka vs Chatisgarh; Hamirpur in HP vs UP).</p>
+            </div>
+          </div>
+
+          <!-- Mathematical Formulas & IMD Standards -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3>📐 Mathematical Formulas & IMD Standards</h3>
+              </div>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+              <p><strong style="color: var(--text-primary);">1. IMD Rainfall Departure (Anomaly %)</strong></p>
+              <div style="background: rgba(255, 255, 255, 0.04); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: 'Inter', -apple-system, monospace; font-size: 0.9rem; font-weight: 600; color: #38bdf8; margin: 0.4rem 0 0.75rem 0; border: 1px solid var(--border-color); border-left: 3px solid #0284c7;">
+                Departure (%) = [(Observed Rainfall − Normal Baseline) / Normal Baseline] × 100
+              </div>
+              <p><strong>IMD Classification:</strong><br>
+              • <strong>Excess:</strong> ≥ +20%<br>
+              • <strong>Normal:</strong> −19% to +19%<br>
+              • <strong>Deficient (Drought):</strong> −20% to −59%<br>
+              • <strong>Scanty (Severe Drought):</strong> ≤ −60%</p>
+              <br>
+              <p><strong style="color: var(--text-primary);">2. Coefficient of Variation (CV %)</strong></p>
+              <div style="background: rgba(255, 255, 255, 0.04); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: 'Inter', -apple-system, monospace; font-size: 0.9rem; font-weight: 600; color: #38bdf8; margin: 0.4rem 0 0.75rem 0; border: 1px solid var(--border-color); border-left: 3px solid #0284c7;">
+                CV (%) = (Standard Deviation / Mean) × 100
+              </div>
+              <p>Measures year-to-year rainfall variability. Higher CV (&gt;30%) indicates erratic climates (e.g., West Rajasthan, Saurashtra).</p>
+              <br>
+              <p><strong style="color: var(--text-primary);">3. Missing Data Treatment:</strong><br>
+              • Missing values are preserved as nulls and excluded from aggregations (not treated as 0 to avoid bias).<br>
+              • 18 missing colonial years in Arunachal Pradesh (1901–1915, 1954–1956) and 5 in Andaman & Nicobar (1909, 1943–1945, 1948) are documented.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div>
+        <strong>India Rainfall Intelligence Dashboard | 1901–2015</strong> • Built with India Meteorological Department (IMD) Observational Data
+      </div>
+      <div>
+        Measurements in <strong>millimeters (mm)</strong> • Portfolio & Internship Grade Analysis
+      </div>
+    </footer>
+  </div>
+
+  <!-- Load Processed Data & Application Script -->
+  <script src="data_processed/rainfall_data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
